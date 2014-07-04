@@ -86,6 +86,7 @@ function Browserify (opts) {
         params.sourceMapPrefix = '//#';
         return browserPack(params);
     };
+    self._moduleDeps = opts.mdeps || mdeps;
     
     if (typeof opts.builtins === 'boolean') {
         self._builtins = opts.builtins ? builtins : {};
@@ -222,7 +223,7 @@ Browserify.prototype.external = function (id, opts) {
         self._pending++;
         
         function captureDeps() {
-            var d = mdeps(id.files, opts);
+            var d = self._moduleDeps(id.files, opts);
             d.on('error', self.emit.bind(self, 'error'));
             d.pipe(through2.obj(write, end));
             
@@ -486,7 +487,7 @@ Browserify.prototype.deps = function (opts) {
 
     
     if (!opts.basedir) opts.basedir = self._basedir;
-    var d = mdeps(self.files, opts);
+    var d = self._moduleDeps(self.files, opts);
     
     var index = 0;
     var tr = d.pipe(through2.obj(write));
